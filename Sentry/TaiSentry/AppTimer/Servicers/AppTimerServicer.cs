@@ -8,6 +8,7 @@ using System.Timers;
 using TaiSentry.AppObserver.Enums;
 using TaiSentry.AppObserver.Models;
 using TaiSentry.AppObserver.Servicers;
+using TaiSentry.AppTimer.Events;
 
 namespace TaiSentry.AppTimer.Servicers
 {
@@ -25,6 +26,7 @@ namespace TaiSentry.AppTimer.Servicers
 
         private Dictionary<string, AppData> _appData;
         private System.Timers.Timer _timer;
+        private AppDurationUpdatedEventArgs _lastInvokeEventArgs;
 
         public struct AppData
         {
@@ -72,22 +74,22 @@ namespace TaiSentry.AppTimer.Servicers
         private void AppObserver_OnAppActiveChanged(object sender, AppObserver.Events.AppActiveChangedEventArgs e)
         {
             string processName = e.App.Process;
-            AppType appType = e.App.Type;
+            bool isStatistical = IsStatistical(e.App);
 
             if (processName != _activeProcess)
             {
                 StopTimer();
                 InvokeEvent();
 
-                if (!string.IsNullOrEmpty(processName) && appType != AppType.SystemComponent)
+                if (isStatistical)
                 {
                     StartTimer();
                 }
 
-                _activeProcess = processName;
+                _activeProcess = e.App.Type == AppType.SystemComponent ? string.Empty : processName;
             }
 
-            if (!string.IsNullOrEmpty(processName) && appType != AppType.SystemComponent)
+            if (isStatistical)
             {
                 var data = new AppData()
                 {
@@ -131,10 +133,27 @@ namespace TaiSentry.AppTimer.Servicers
             {
                 var data = _appData[_activeProcess];
                 var args = new Events.AppDurationUpdatedEventArgs(_appDuration, data.App, data.Window, _startTime, _endTime);
-                Debug.WriteLine("【计时更新】" + args);
-                OnAppDurationUpdated?.Invoke(this, args);
+                if (_lastInvokeEventArgs?.ActiveTime.ToString() != _startTime.ToString() || _lastInvokeEventArgs?.EndTime.ToString() != _endTime.ToString())
+                {
+                    Debug.WriteLine("【计时更新】" + args);
+                    OnAppDurationUpdated?.Invoke(this, args);
+                }
+                else
+                {
+                    Debug.WriteLine("【重复！！】" + _lastInvokeEventArgs + "，【now】" + args);
+                }
+                _lastInvokeEventArgs = args;
             }
         }
 
+        /// <summary>
+        /// 判断应用是否需要被统计
+        /// </summary>
+        /// <param name="app_"></param>
+        /// <returns>需要统计时返回 true </returns>
+        private bool IsStatistical(AppInfo app_)
+        {
+            return !string.IsNullOrEmpty(app_.Process) && app_.Type != AppType.SystemComponent && !string.IsNullOrEmpty(app_.ExecutablePath);
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace TaiSentry.AppObserver.Servicers
             try
             {
                 string title = GetWindowTitle(handle_);
-                var rect = GetWindowRect(handle_);
+                var rect = Win32WindowAPI.GetWindowRect(handle_);
 
                 int width = rect.Width;
                 int height = rect.Height;
@@ -53,27 +53,5 @@ namespace TaiSentry.AppObserver.Servicers
                 return string.Empty;
             }
         }
-
-        private Win32WindowAPI.RECT GetWindowRect(IntPtr handle_)
-        {
-            try
-            {
-                Win32WindowAPI.GetWindowRect(handle_, out Win32WindowAPI.RECT rect);
-                return rect;
-
-            }
-            catch (Exception e)
-            {
-                return new Win32WindowAPI.RECT()
-                {
-                    Left = 0,
-                    Bottom = 0,
-                    Right = 0,
-                    Top = 0
-                };
-            }
-        }
-
-
     }
 }

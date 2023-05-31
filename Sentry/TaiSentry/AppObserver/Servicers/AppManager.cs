@@ -139,7 +139,6 @@ namespace TaiSentry.AppObserver.Servicers
                 else
                 {
                     executablePath = GetAppExecutablePath(processId);
-                    appType = IsSystemComponent(processName, hwnd_) ? AppType.SystemComponent : AppType.Win32;
                 }
 
                 if (!string.IsNullOrEmpty(executablePath))
@@ -148,6 +147,7 @@ namespace TaiSentry.AppObserver.Servicers
                     description = info.FileDescription;
                 }
 
+                appType = IsSystemComponent(processName, hwnd_) ? AppType.SystemComponent : AppType.Win32;
                 app = new AppInfo(processId, processName, description, executablePath, appType);
                 if (processName != "explorer")
                 {
@@ -267,9 +267,8 @@ namespace TaiSentry.AppObserver.Servicers
         #region 判断应用是否是系统组件
         private bool IsSystemComponent(string processName_, IntPtr windowHandle_)
         {
-            processName_ = processName_.ToLower();
             string[] scTitleArr = { "UnlockingWindow", "Program Manager", "系统托盘溢出窗口。", "Input Flyout" };
-
+            string[] sysProcessArr = { "ShellExperienceHost", "StartMenuExperienceHost", "SearchHost" };
             if (processName_ == "explorer")
             {
                 //  资源管理器需要获取标题来判断
@@ -277,9 +276,15 @@ namespace TaiSentry.AppObserver.Servicers
                 StringBuilder stringBuilder = new StringBuilder(titleCapacity);
                 Win32WindowAPI.GetWindowText(windowHandle_, stringBuilder, stringBuilder.Capacity);
                 string title = stringBuilder.ToString();
+                if (title == "任务切换")
+                {
+                    var rect = Win32WindowAPI.GetWindowRect(windowHandle_);
+                    return rect.Left + rect.Top == 0;
+                }
                 return title.Length == 0 || scTitleArr.Contains(title);
             }
-            return false;
+            bool isSys = sysProcessArr.Contains(processName_);
+            return isSys;
         }
         #endregion
     }
