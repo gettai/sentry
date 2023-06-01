@@ -18,13 +18,13 @@ namespace TaiSentry.AppObserver.Servicers
             {
                 string title = GetWindowTitle(handle_);
                 var rect = Win32WindowAPI.GetWindowRect(handle_);
-
+                string className = Win32WindowAPI.GetWindowClassName(handle_);
                 int width = rect.Width;
                 int height = rect.Height;
                 int x = rect.Left;
                 int y = rect.Top;
 
-                return new WindowInfo(title, handle_, width, height, x, y);
+                return new WindowInfo(className, title, handle_, width, height, x, y);
             }
             catch (Exception e)
             {
