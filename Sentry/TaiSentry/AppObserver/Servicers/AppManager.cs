@@ -267,23 +267,44 @@ namespace TaiSentry.AppObserver.Servicers
         #region 判断应用是否是系统组件
         private bool IsSystemComponent(string processName_, IntPtr windowHandle_)
         {
-            string[] scTitleArr = { "UnlockingWindow", "Program Manager", "系统托盘溢出窗口。", "Input Flyout" };
-            string[] sysProcessArr = { "ShellExperienceHost", "StartMenuExperienceHost", "SearchHost" };
+            //  系统组件类名
+            string[] sysClassNameArr = {
+                "Progman",
+                "WorkerW",
+                "Shell_TrayWnd",
+                "XamlExplorerHostIslandWindow",
+                "TopLevelWindowForOverflowXamlIsland",
+                "Shell_InputSwitchTopLevelWindow",
+                "LockScreenControllerProxyWindow"
+            };
+            //  系统进程名称
+            string[] sysProcessArr = {
+                "ShellExperienceHost",
+                "StartMenuExperienceHost",
+                "SearchHost",
+                "LockApp"
+            };
+
+            bool isSys;
             if (processName_ == "explorer")
             {
-                //  资源管理器需要获取标题来判断
-                int titleCapacity = Win32WindowAPI.GetWindowTextLength(windowHandle_) * 2;
-                StringBuilder stringBuilder = new StringBuilder(titleCapacity);
-                Win32WindowAPI.GetWindowText(windowHandle_, stringBuilder, stringBuilder.Capacity);
-                string title = stringBuilder.ToString();
-                if (title == "任务切换")
+                //  先通过类名判定
+                string className = Win32WindowAPI.GetWindowClassName(windowHandle_);
+                if (!string.IsNullOrEmpty(className))
                 {
-                    var rect = Win32WindowAPI.GetWindowRect(windowHandle_);
-                    return rect.Left + rect.Top == 0;
+                    isSys = sysClassNameArr.Contains(className);
                 }
-                return title.Length == 0 || scTitleArr.Contains(title);
+                else
+                {
+                    int titleLength = Win32WindowAPI.GetWindowTextLength(windowHandle_);
+                    isSys = titleLength <= 0;
+                }
             }
-            bool isSys = sysProcessArr.Contains(processName_);
+            else
+            {
+                //  通过进程名称判定
+                isSys = sysProcessArr.Contains(processName_);
+            }
             return isSys;
         }
         #endregion
