@@ -4,12 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TaiSentry.AppObserver.Servicers;
 using TaiSentry.AppTimer.Servicers;
+using TaiSentry.StateObserver.Servicers;
 
 namespace TaiSentryService
 {
@@ -28,6 +30,7 @@ namespace TaiSentryService
                 services.AddSingleton<IWindowManager, WindowManager>();
                 services.AddSingleton<IAppObserver, AppObserver>();
                 services.AddSingleton<IAppTimerServicer, AppTimerServicer>();
+                services.AddSingleton<IStateObserverServicer, StateObserverServicer>();
             }).Build();
         }
         protected override async void OnStartup(StartupEventArgs e)
@@ -38,13 +41,20 @@ namespace TaiSentryService
 
             var service = AppHost.Services.GetRequiredService<IAppObserver>();
             var timerService = AppHost.Services.GetRequiredService<IAppTimerServicer>();
+            var stateService = AppHost.Services.GetRequiredService<IStateObserverServicer>();
             service.Start();
             timerService.Start();
-
+            stateService.Start();
+            stateService.OnStateChanged += StateService_OnStateChanged;
             MainWindow = null;
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             base.OnStartup(e);
+        }
+
+        private void StateService_OnStateChanged(object sender_, TaiSentry.StateObserver.Events.StateChangedEventArgs e_)
+        {
+            Debug.WriteLine("【状态变更】" + e_.Status);
         }
 
         #region 阻止服务多次启动

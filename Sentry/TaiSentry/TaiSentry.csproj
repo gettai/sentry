@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Notification\" />
+    <Folder Include="Server\" />
+    <Folder Include="CommandHandler\" />
+  </ItemGroup>
+
 </Project>
