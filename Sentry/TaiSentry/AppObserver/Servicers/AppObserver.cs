@@ -93,6 +93,13 @@ namespace TaiSentry.AppObserver.Servicers
             var window = _windowManager.GetWindowInfo(handle_);
             return new AppActiveChangedEventArgs(app, window, activeTime_);
         }
+
+        private void HandleForegroundWindow()
+        {
+            IntPtr w = Win32WindowAPI.GetForegroundWindow();
+            ForegroundEventCallback(IntPtr.Zero, 0, w, 0, 0, 0, 0);
+        }
+
         public void Start()
         {
             if (_isStart)
@@ -101,6 +108,7 @@ namespace TaiSentry.AppObserver.Servicers
             }
             _isStart = true;
             _hook = SetWinEventHook(0x0003, 0x0003, IntPtr.Zero, _foregroundEventDelegate, 0, 0, 0);
+            HandleForegroundWindow();
         }
 
         public void Stop()
