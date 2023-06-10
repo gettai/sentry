@@ -10,6 +10,7 @@ using TaiSentry.Utils.Win32API;
 using Timer = System.Timers.Timer;
 using Point = TaiSentry.Utils.Win32API.Win32InputAPI.Point;
 using System.Data;
+using Microsoft.Win32;
 
 namespace TaiSentry.StateObserver.Servicers
 {
@@ -62,6 +63,9 @@ namespace TaiSentry.StateObserver.Servicers
             //  卸载钩子
             Win32InputAPI.UnhookWindowsHookEx(_keyboardHook);
             Win32InputAPI.UnhookWindowsHookEx(_mouseHook);
+
+            SystemEvents.PowerModeChanged -= SystemEvents_PowerModeChanged;
+            SystemEvents.SessionSwitch -= SystemEvents_SessionSwitch;
         }
         #endregion
 
@@ -85,6 +89,9 @@ namespace TaiSentry.StateObserver.Servicers
 #endif
             _timer.Elapsed += Timer_Elapsed;
             _timer.Start();
+
+            SystemEvents.PowerModeChanged += SystemEvents_PowerModeChanged;
+            SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
         }
 
         private void UpdateCursorPoint()
@@ -272,6 +279,30 @@ namespace TaiSentry.StateObserver.Servicers
                 }
             }
             return Win32InputAPI.CallNextHookEx(_hookKeyboardID, nCode, wParam, lParam);
+        }
+
+        private void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
+        {
+            if (e.Reason == SessionSwitchReason.RemoteDisconnect || e.Reason == SessionSwitchReason.ConsoleDisconnect)
+            {
+                //  与这台设备远程桌面连接断开
+                SetDepart();
+            }
+        }
+
+        private void SystemEvents_PowerModeChanged(object sender, PowerModeChangedEventArgs e)
+        {
+            switch (e.Mode)
+            {
+                case PowerModes.Suspend:
+                    //  电脑休眠
+                    SetDepart();
+                    break;
+                case PowerModes.Resume:
+                    //  电脑恢复
+                    SetActive();
+                    break;
+            }
         }
         #endregion
 
