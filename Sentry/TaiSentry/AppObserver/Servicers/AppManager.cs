@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TaiSentry.AppObserver.Enums;
 using TaiSentry.AppObserver.Models;
-using TaiSentry.Utils.Win32;
+using TaiSentry.Utils.Win32API;
 
 namespace TaiSentry.AppObserver.Servicers
 {

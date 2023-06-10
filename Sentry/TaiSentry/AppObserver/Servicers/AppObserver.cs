@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using TaiSentry.AppObserver.Events;
 using TaiSentry.AppObserver.Models;
-using TaiSentry.Utils.Win32;
+using TaiSentry.Utils.Win32API;
 using static TaiSentry.AppObserver.Servicers.AppObserver;
 
 namespace TaiSentry.AppObserver.Servicers

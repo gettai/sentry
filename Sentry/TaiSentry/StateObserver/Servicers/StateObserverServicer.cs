@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using TaiSentry.StateObserver.Enums;
-using TaiSentry.Utils.Win32;
+using TaiSentry.Utils.Win32API;
 using Timer = System.Timers.Timer;
-using Point = TaiSentry.Utils.Win32.Win32InputAPI.Point;
+using Point = TaiSentry.Utils.Win32API.Win32InputAPI.Point;
 using System.Data;
 
 namespace TaiSentry.StateObserver.Servicers
