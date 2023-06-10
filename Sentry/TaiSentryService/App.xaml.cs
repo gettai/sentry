@@ -42,8 +42,9 @@ namespace TaiSentryService
             var service = AppHost.Services.GetRequiredService<IAppObserver>();
             var timerService = AppHost.Services.GetRequiredService<IAppTimerServicer>();
             var stateService = AppHost.Services.GetRequiredService<IStateObserverServicer>();
-            service.Start();
+            //  计时服务必须比应用观察服务先启动
             timerService.Start();
+            service.Start();
             stateService.Start();
             stateService.OnStateChanged += StateService_OnStateChanged;
             MainWindow = null;
