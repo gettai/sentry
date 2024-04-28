@@ -54,8 +54,8 @@ namespace TaiSentry.AppObserver.Servicers
             var stopwatch = Stopwatch.StartNew();
             var args = GetAppInfoEventArgs(hwnd, activeTime);
 
-            Debug.WriteLine("【{0}ms】" + args.App.ToString(), stopwatch.Elapsed.TotalMilliseconds);
-            Debug.WriteLine("【{0}ms】" + args.Window.ToString(), stopwatch.Elapsed.TotalMilliseconds);
+            //Debug.WriteLine("【{0}ms】" + args.App.ToString(), stopwatch.Elapsed.TotalMilliseconds);
+            //Debug.WriteLine("【{0}ms】" + args.Window.ToString(), stopwatch.Elapsed.TotalMilliseconds);
 
             //  响应事件
             OnAppActiveChanged?.Invoke(this, args);

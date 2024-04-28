@@ -9,8 +9,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using TaiSentry;
 using TaiSentry.AppObserver.Servicers;
 using TaiSentry.AppTimer.Servicers;
+using TaiSentry.Server;
+using TaiSentry.Servicer;
 using TaiSentry.StateObserver.Servicers;
 
 namespace TaiSentryService
@@ -20,42 +23,39 @@ namespace TaiSentryService
     /// </summary>
     public partial class App : Application
     {
-        public static IHost? AppHost { get; private set; }
+        //public static IHost? AppHost { get; private set; }
         private Mutex _mutex;
+        private Main _main;
         public App()
         {
-            AppHost = Host.CreateDefaultBuilder().ConfigureServices((hostContext, services) =>
-            {
-                services.AddSingleton<IAppManager, AppManager>();
-                services.AddSingleton<IWindowManager, WindowManager>();
-                services.AddSingleton<IAppObserver, AppObserver>();
-                services.AddSingleton<IAppTimerServicer, AppTimerServicer>();
-                services.AddSingleton<IStateObserverServicer, StateObserverServicer>();
-            }).Build();
+            _main = new Main();
+            //AppHost = Host.CreateDefaultBuilder().ConfigureServices((hostContext, services) =>
+            //{
+            //    services.AddSingleton<IAppManager, AppManager>();
+            //    services.AddSingleton<IWindowManager, WindowManager>();
+            //    services.AddSingleton<IAppObserver, AppObserver>();
+            //    services.AddSingleton<IAppTimerServicer, AppTimerServicer>();
+            //    services.AddSingleton<IStateObserverServicer, StateObserverServicer>();
+            //    services.AddSingleton<IWSServer, WSServer>();
+            //    services.AddSingleton<IMain, Main>();
+            //}).Build();
         }
         protected override async void OnStartup(StartupEventArgs e)
         {
             PreventMultipleInstances();
+            await _main!.Start(e.Args);
+            //await AppHost!.StartAsync();
+            if (e.Args.Length > 0)
+            {
+                MessageBox.Show(e.Args[0]);
+            }
+            //var main = AppHost.Services.GetRequiredService<IMain>();
+            //main.Start();
 
-            await AppHost!.StartAsync();
-
-            var service = AppHost.Services.GetRequiredService<IAppObserver>();
-            var timerService = AppHost.Services.GetRequiredService<IAppTimerServicer>();
-            var stateService = AppHost.Services.GetRequiredService<IStateObserverServicer>();
-            //  计时服务必须比应用观察服务先启动
-            timerService.Start();
-            service.Start();
-            stateService.Start();
-            stateService.OnStateChanged += StateService_OnStateChanged;
             MainWindow = null;
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
             base.OnStartup(e);
-        }
-
-        private void StateService_OnStateChanged(object sender_, TaiSentry.StateObserver.Events.StateChangedEventArgs e_)
-        {
-            Debug.WriteLine("【状态变更】" + e_.Status);
         }
 
         #region 阻止服务多次启动
@@ -74,7 +74,8 @@ namespace TaiSentryService
 
         protected override async void OnExit(ExitEventArgs e)
         {
-            await AppHost!.StopAsync();
+            await _main.Stop();
+            //await AppHost!.StopAsync();
             base.OnExit(e);
         }
     }

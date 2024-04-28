@@ -7,13 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Notification\" />
-    <Folder Include="Server\" />
     <Folder Include="CommandHandler\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
     <PackageReference Include="Microsoft.Win32.SystemEvents" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
   </ItemGroup>
 
 </Project>

@@ -61,6 +61,7 @@ namespace TaiSentry.AppTimer.Servicers
 
             _isStart = true;
             _appObserver.OnAppActiveChanged += AppObserver_OnAppActiveChanged;
+            Debug.WriteLine("已启动APP计时服务");
         }
 
 
@@ -69,6 +70,7 @@ namespace TaiSentry.AppTimer.Servicers
             _isStart = false;
             StopTimer();
             _appObserver.OnAppActiveChanged -= AppObserver_OnAppActiveChanged;
+            Debug.WriteLine("！已停止APP计时服务");
         }
 
         private void AppObserver_OnAppActiveChanged(object sender, AppObserver.Events.AppActiveChangedEventArgs e)
@@ -79,7 +81,7 @@ namespace TaiSentry.AppTimer.Servicers
             if (processName != _activeProcess)
             {
                 StopTimer();
-                InvokeEvent();
+                InvokeAppDurationUpdated();
 
                 if (isStatistical)
                 {
@@ -127,23 +129,29 @@ namespace TaiSentry.AppTimer.Servicers
             _endTime = DateTime.Now;
         }
 
-        private void InvokeEvent()
+        public void InvokeAppDurationUpdated()
         {
-            if (_appDuration > 0 && !string.IsNullOrEmpty(_activeProcess) && _appData.ContainsKey(_activeProcess))
+            var args = GetAppDuration();
+            if (args != null)
             {
-                var data = _appData[_activeProcess];
-                var args = new Events.AppDurationUpdatedEventArgs(_appDuration, data.App, data.Window, _startTime, _endTime);
-                if (_lastInvokeEventArgs?.ActiveTime.ToString() != _startTime.ToString() || _lastInvokeEventArgs?.EndTime.ToString() != _endTime.ToString())
-                {
-                    Debug.WriteLine("【计时更新】" + args);
-                    OnAppDurationUpdated?.Invoke(this, args);
-                }
-                else
-                {
-                    Debug.WriteLine("【重复！！】" + _lastInvokeEventArgs + "，【now】" + args);
-                }
-                _lastInvokeEventArgs = args;
+                Debug.WriteLine("【计时更新】" + args);
+                OnAppDurationUpdated?.Invoke(this, args);
             }
+            //if (_appDuration > 0 && !string.IsNullOrEmpty(_activeProcess) && _appData.ContainsKey(_activeProcess))
+            //{
+            //    var data = _appData[_activeProcess];
+            //    var args = new Events.AppDurationUpdatedEventArgs(_appDuration, data.App, data.Window, _startTime, _endTime);
+            //    if (_lastInvokeEventArgs?.ActiveTime.ToString() != _startTime.ToString() || _lastInvokeEventArgs?.EndTime.ToString() != _endTime.ToString())
+            //    {
+            //        Debug.WriteLine("【计时更新】" + args);
+            //        OnAppDurationUpdated?.Invoke(this, args);
+            //    }
+            //    else
+            //    {
+            //        Debug.WriteLine("【重复！！】" + _lastInvokeEventArgs + "，【now】" + args);
+            //    }
+            //    _lastInvokeEventArgs = args;
+            //}
         }
 
         /// <summary>
@@ -154,6 +162,32 @@ namespace TaiSentry.AppTimer.Servicers
         private bool IsStatistical(AppInfo app_)
         {
             return !string.IsNullOrEmpty(app_.Process) && app_.Type != AppType.SystemComponent && !string.IsNullOrEmpty(app_.ExecutablePath);
+        }
+
+        public void Reset()
+        {
+            _appDuration = 0;
+        }
+
+        public AppDurationUpdatedEventArgs? GetAppDuration()
+        {
+            if (_appDuration > 0 && !string.IsNullOrEmpty(_activeProcess) && _appData.ContainsKey(_activeProcess))
+            {
+                var data = _appData[_activeProcess];
+                var args = new Events.AppDurationUpdatedEventArgs(_appDuration, data.App, data.Window, _startTime, _endTime);
+                if (_lastInvokeEventArgs?.ActiveTime.ToString() != _startTime.ToString() || _lastInvokeEventArgs?.EndTime.ToString() != _endTime.ToString())
+                {
+                    return args;
+                    //Debug.WriteLine("【计时更新】" + args);
+                    //OnAppDurationUpdated?.Invoke(this, args);
+                }
+                else
+                {
+                    Debug.WriteLine("【重复！！】" + _lastInvokeEventArgs + "，【now】" + args);
+                }
+                _lastInvokeEventArgs = args;
+            }
+            return null;
         }
     }
 }

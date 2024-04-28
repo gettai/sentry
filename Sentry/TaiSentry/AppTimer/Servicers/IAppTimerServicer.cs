@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TaiSentry.AppTimer.Events;
 
 namespace TaiSentry.AppTimer.Servicers
 {
@@ -24,5 +25,17 @@ namespace TaiSentry.AppTimer.Servicers
         /// 停止计时服务
         /// </summary>
         void Stop();
+        /// <summary>
+        /// 重置计时（将当前计时清零）
+        /// </summary>
+        void Reset();
+        /// <summary>
+        /// 立即获取当前应用的计时数据
+        /// </summary>
+        AppDurationUpdatedEventArgs? GetAppDuration();
+        /// <summary>
+        /// 响应计时更新事件
+        /// </summary>
+        void InvokeAppDurationUpdated();
     }
 }
